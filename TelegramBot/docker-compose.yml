@@ -1,0 +1,25 @@
+version: "3"
+services:
+
+  bot:
+    build:
+      context: ./bot
+      dockerfile: Dockerfile
+    restart: on-failure
+
+  index-api:
+    build:
+      context: ./semantic_search
+      dockerfile: Dockerfile
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [ gpu ]
+    ports:
+      - "8000:8000"
+    restart: on-failure
+    depends_on:
+      - bot

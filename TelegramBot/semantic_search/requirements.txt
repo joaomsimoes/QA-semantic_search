@@ -1,0 +1,9 @@
+transformers
+sentence-transformers
+hnswlib
+sqlalchemy
+pymysql
+mysql-connector-python
+fastapi
+uvicorn
+gunicorn
