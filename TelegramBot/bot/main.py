@@ -100,7 +100,7 @@ def give_meme(update: Update, context: CallbackContext):
 def main():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater("2013708252:AAGqLJM8A7XFrDZ1gXVH-Bn-0feZLd2XSp4",
+    updater = Updater("#",
                       use_context=True)
 
     # Get the dispatcher to register handlers
