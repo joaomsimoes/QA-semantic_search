@@ -1,6 +1,8 @@
 import json
 from sqlalchemy import create_engine
 import mysql.connector
+import hashlib
+import re
 
 
 def db_connection(database=None):
@@ -19,6 +21,8 @@ def query_meme():
 
         return results[0][0]
 
+
+#####################
 
 def query_scrapper():
     engine = db_connection("hnsw")
@@ -49,3 +53,40 @@ def query_context(link):
         result = results.fetchall()
 
         return result
+
+
+###################
+
+
+def clean_text(text):
+    mapping = {'?': '', ' ': '', '!': ''}
+    text = text.lower()
+    for key, value in mapping.items():
+        text.replace(key, value)
+
+    return text
+
+
+def query_cache(query):
+    query = re.sub(r"[^a-zA-Z0-9]", "", query).lower()
+    hash_query = hashlib.md5(query.encode()).hexdigest()
+    engine = db_connection("hnsw")
+    with engine.connect() as cursor:
+        results = cursor.execute(
+            f"SELECT answer, link FROM hnsw.cache WHERE hash = '{hash_query}';"
+        )
+        result = results.fetchall()
+
+        return result
+
+
+def push_cache(query, answer, link):
+    text = re.sub(r"[^a-zA-Z0-9]", "", query).lower()
+    hash_query = hashlib.md5(text.encode()).hexdigest()
+    engine = db_connection("hnsw")
+    with engine.connect() as cursor:
+        insert = f"INSERT INTO hnsw.cache (hash, query, answer, link)" \
+                 f"VALUES(%s, %s, %s, %s)"
+        values = (hash_query, query, answer, link)
+        cursor.execute(insert, values)
+

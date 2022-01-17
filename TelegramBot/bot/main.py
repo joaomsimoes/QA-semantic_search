@@ -5,11 +5,11 @@ from telegram.ext.commandhandler import CommandHandler
 from telegram.ext.messagehandler import MessageHandler
 from telegram.ext import CallbackQueryHandler
 from telegram.ext.filters import Filters
-import telegram
 
-from conn_db import query_meme
+from conn_db import *
 import requests
 import logging
+import time
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
@@ -17,14 +17,20 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def semantic_api(text):
-    answer = requests.get('http://localhost:8000/', params={'query': str(text)}).json()
+def semantic_api(query):
+    result = query_cache(query)
+    if result:
+        return result[0]
 
-    return answer
+    else:
+        answer = requests.get('http://localhost:8000/', params={'query': str(query)}).json()
+        if answer[0]:
+            push_cache(query, answer[0], answer[1])
+
+            return answer
 
 
 def start(update: Update, context: CallbackContext):
-    user = update.effective_user
     update.message.reply_text(
         f"Hey! I'm CryptoBot! How are you? You can ask me anything about cryptocurrency!")
     update.message.reply_text("Hit /help to know what I can do")
@@ -36,7 +42,7 @@ def help_command(update: Update, context: CallbackContext):
 
     keyboard = [[InlineKeyboardButton(text='What is blockchain?', callback_data='1')],
                 [InlineKeyboardButton(text='Is ethereum a good investment in 2022?', callback_data='2')],
-                [InlineKeyboardButton(text='Give me a meme', callback_data='Give me a meme')]]
+                [InlineKeyboardButton(text='Give me a meme', callback_data='3')]]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
@@ -53,28 +59,25 @@ def query_handler(update: Update, context: CallbackContext) -> None:
 
     if query.data == '1':
         answer = semantic_api('What is blockchain?')
-        query.answer(answer[0])
-        query.answer(answer[1])
-        query.answer(answer[2])
+        update.effective_message.reply_text(answer[0])
+        update.effective_message.reply_text(answer[1])
 
     elif query.data == '2':
         answer = semantic_api('Is ethereum a good investment in 2022?')
-        query.answer(answer[0])
-        query.answer(answer[1])
-        query.answer(answer[2])
+        update.effective_message.reply_text(answer[0])
+        update.effective_message.reply_text(answer[1])
     else:
         meme = query_meme()
-
-        query.edit_message_text(meme)
-        query.edit_message_text("Funny right?")
+        update.effective_message.reply_photo(meme)
+        update.effective_message.reply_text("Funny right?")
 
 
 def about_command(update: Update, context: CallbackContext):
     """Send a message when the command /help is issued."""
-    update.message.reply_text("I use semantic search with transformers architecture to answer your questions.")
+    update.message.reply_text("I use semantic search with transformers architecture to answer your questions. 🤖")
     update.message.reply_text(
-        "I'm a bit slow answering your questions because I'm running on CPU. Pet project == Free tier budget!")
-    update.message.reply_text("See the github repo: https://github.com/joaomsimoes/telegram-semantic_search")
+        "I'm a bit slow answering your questions because I'm running on CPU. Pet project == Free tier budget! ✌")
+    update.message.reply_text("See the github repo: https://github.com/joaomsimoes/semantic_search")
 
 
 def open_question(update: Update, context: CallbackContext) -> None:
@@ -100,7 +103,7 @@ def give_meme(update: Update, context: CallbackContext):
 def main():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater("#",
+    updater = Updater("2013708252:AAGqLJM8A7XFrDZ1gXVH-Bn-0feZLd2XSp4",
                       use_context=True)
 
     # Get the dispatcher to register handlers

@@ -2,15 +2,11 @@ version: "3"
 services:
 
   bot:
-    build:
-      context: ./bot
-      dockerfile: Dockerfile
+    image: "joaomsimoes/telegram-bot:latest"
     restart: on-failure
 
   index-api:
-    build:
-      context: ./semantic_search
-      dockerfile: Dockerfile
+    image: "joaomsimoes/index:latest"
     deploy:
       resources:
         reservations:
