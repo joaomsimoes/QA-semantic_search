@@ -23,7 +23,7 @@ def semantic_api(query):
         return result[0]
 
     else:
-        answer = requests.get('http://localhost:8000/', params={'query': str(query)}).json()
+        answer = requests.get('http://index-api:8000/', params={'query': str(query)}).json()
         if answer[0]:
             push_cache(query, answer[0], answer[1])
 
@@ -103,7 +103,7 @@ def give_meme(update: Update, context: CallbackContext):
 def main():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater("2013708252:AAGqLJM8A7XFrDZ1gXVH-Bn-0feZLd2XSp4",
+    updater = Updater("#",
                       use_context=True)
 
     # Get the dispatcher to register handlers
