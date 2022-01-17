@@ -1,9 +1,7 @@
 import json
 from sqlalchemy import create_engine
-import mysql.connector
 import hashlib
-import re
-
+import nltk
 
 def db_connection(database=None):
     f = open("db.json")
@@ -13,6 +11,7 @@ def db_connection(database=None):
     return engine
 
 
+# Meme
 def query_meme():
     engine = db_connection('scrapper')
     with engine.connect() as cursor:
@@ -22,8 +21,7 @@ def query_meme():
         return results[0][0]
 
 
-#####################
-
+# Index
 def query_scrapper():
     engine = db_connection("hnsw")
     with engine.connect() as cursor:
@@ -55,20 +53,23 @@ def query_context(link):
         return result
 
 
-###################
+# Cache
+nltk.download('punkt')
+
+stopwords = {'to', 'in', 'for', '?', ' ', '!', 'at', 'o', 'a', 'the', 'and', '?', 'on', 'whom', 'by', 'now', 'of', 'too', 'as'}
 
 
 def clean_text(text):
-    mapping = {'?': '', ' ': '', '!': ''}
     text = text.lower()
-    for key, value in mapping.items():
-        text.replace(key, value)
+    tokens = nltk.tokenize.word_tokenize(text)
+    tokens = [t for t in tokens if t not in stopwords]
+    query = ''.join(tokens)
 
-    return text
+    return query
 
 
 def query_cache(query):
-    query = re.sub(r"[^a-zA-Z0-9]", "", query).lower()
+    query = clean_text(query)
     hash_query = hashlib.md5(query.encode()).hexdigest()
     engine = db_connection("hnsw")
     with engine.connect() as cursor:
@@ -77,12 +78,12 @@ def query_cache(query):
         )
         result = results.fetchall()
 
-        return result
+    return result
 
 
 def push_cache(query, answer, link):
-    text = re.sub(r"[^a-zA-Z0-9]", "", query).lower()
-    hash_query = hashlib.md5(text.encode()).hexdigest()
+    query = clean_text(query)
+    hash_query = hashlib.md5(query.encode()).hexdigest()
     engine = db_connection("hnsw")
     with engine.connect() as cursor:
         insert = f"INSERT INTO hnsw.cache (hash, query, answer, link)" \
