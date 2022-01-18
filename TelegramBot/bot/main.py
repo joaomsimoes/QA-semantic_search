@@ -1,15 +1,16 @@
 from telegram.ext.updater import Updater
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ChatAction
 from telegram.ext.callbackcontext import CallbackContext
 from telegram.ext.commandhandler import CommandHandler
 from telegram.ext.messagehandler import MessageHandler
 from telegram.ext import CallbackQueryHandler
 from telegram.ext.filters import Filters
+import telegram
 
 from conn_db import *
+from ner_coins import coin_ner
 import requests
 import logging
-import time
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
@@ -24,10 +25,12 @@ def semantic_api(query):
 
     else:
         answer = requests.get('http://index-api:8000/', params={'query': str(query)}).json()
-        if answer[0]:
-            push_cache(query, answer[0], answer[1])
-
-            return answer
+        try:
+            if answer[0]:
+                push_cache(query, answer[0], answer[1])
+                return answer
+        except:
+            return []
 
 
 def start(update: Update, context: CallbackContext):
@@ -82,6 +85,7 @@ def about_command(update: Update, context: CallbackContext):
 
 def open_question(update: Update, context: CallbackContext) -> None:
     """Semantic search"""
+    context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=telegram.ChatAction.TYPING, timeout=8)
     answer = semantic_api(update.message.text)
     try:
         if answer[0]:
@@ -100,10 +104,21 @@ def give_meme(update: Update, context: CallbackContext):
     update.message.reply_text("Funny right?")
 
 
+def coin_handler(update: Update, context: CallbackContext):
+    """Send a message when the command /help is issued."""
+    answer = coin_ner(update.message.text)
+    try:
+        update.message.reply_text(answer)
+    except:
+        update.message.reply_text("Sorry I did not understand what you want to say")
+
+
 def main():
     """Start the bot."""
     # Create the Updater and pass it your bot's token.
-    updater = Updater("#",
+    f = open("keys.json")
+    data = json.load(f)
+    updater = Updater(data["Telegram"],
                       use_context=True)
 
     # Get the dispatcher to register handlers
@@ -115,6 +130,15 @@ def main():
     dispatcher.add_handler(CommandHandler("about", about_command))
     dispatcher.add_handler(CallbackQueryHandler(query_handler))
     dispatcher.add_handler(MessageHandler(Filters.regex('^Meme|meme|Give meme|give meme|give me a meme|Give me a meme$'), give_meme))
+    dispatcher.add_handler(
+        MessageHandler(Filters.regex(
+            '^price from .*|Price from .*|current price from .*|Current price from .*|'
+            'value from .*|Value from .*|bitcoin|Bitcoin|BTC|Btc|btc|Ethereum|ethereum|ETH|Eth|eth|'
+            'Tether|tether|USDT|Usdt|usdt|BNB|Bnb|bnb|Cardano|cardano|ADA|Ada|ada|USD Coin|USDC|Usdc|'
+            'Solana|solana|SOL|sol|Sol|XPR|Xpr|xpr|Terra|terra|LUNA|Luna|luna|Polkadot|polkadot|DOT|dot|Dot|'
+            'Dogecoin|dogecoin|doge|DOGE|Doge|Avalanche|avalanche|AVAX|Avax|avax|Polygon|polygon|MATIC|Matic|matic|'
+            'Shiba|shiba|Shiba Inu|shiba inu|Shiba inu|shiba Inu|SHIB|Shib|shib|Litecoin|litecoin|ltc|Ltc|LTC$'
+        ), coin_handler))
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, open_question))
 
     # Start the Bot

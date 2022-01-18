@@ -1,0 +1,8 @@
+python -m prodigy sense2vec.teach coin_terms ./s2v_reddit/s2v_reddit_2019_lg --seeds "bitcoin, ada, cardano, btc, eth, ethereum, binance, tether, solana,
+ luna, sol, xpr, shiba"
+
+python -m prodigy ner.manual ner_cryptos blank:en ./coin_reddit.txt --label COIN
+
+python -m prodigy terms.to-patterns coin_terms --label COIN --spacy-model blank:en > ./coin_patterns.jsonl
+
+python -m prodigy bert.ner.manual ner-coin bitcoin --label COIN --tokenizer-vocab ./vocab.txt --lowercase --hide-wp-prefix -F ./transformers-tokenizers.py

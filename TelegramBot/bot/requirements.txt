@@ -1,5 +1,7 @@
 python-telegram-bot
+python-coinmarketcap
 sqlalchemy
 pymysql
 mysql-connector-python
 requests
+nltk

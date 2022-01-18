@@ -4,7 +4,7 @@ import hashlib
 import nltk
 
 def db_connection(database=None):
-    f = open("db.json")
+    f = open("keys.json")
     data = json.load(f)
     engine = create_engine(data['connection'] + database)
 
@@ -74,8 +74,7 @@ def query_cache(query):
     engine = db_connection("hnsw")
     with engine.connect() as cursor:
         results = cursor.execute(
-            f"SELECT answer, link FROM hnsw.cache WHERE hash = '{hash_query}';"
-        )
+            f"SELECT answer, link FROM hnsw.cache WHERE hash = '{hash_query}';")
         result = results.fetchall()
 
     return result
