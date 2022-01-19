@@ -2,4 +2,3 @@ saved-model/*
 hnsw-index/*
 Docker-Lightsail_aws/prodigy-wheel
 *.json
-*.jpg
