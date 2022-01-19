@@ -1,6 +1,5 @@
 import json
 from sqlalchemy import create_engine
-import mysql.connector
 import hashlib
 import re
 

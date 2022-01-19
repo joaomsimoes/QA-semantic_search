@@ -8,29 +8,13 @@ from telegram.ext.filters import Filters
 import telegram
 
 from conn_db import *
-from ner_coins import coin_ner
-import requests
+from utils import *
 import logging
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
 )
 logger = logging.getLogger(__name__)
-
-
-def semantic_api(query):
-    result = query_cache(query)
-    if result:
-        return result[0]
-
-    else:
-        answer = requests.get('http://index-api:8000/', params={'query': str(query)}).json()
-        try:
-            if answer[0]:
-                push_cache(query, answer[0], answer[1])
-                return answer
-        except:
-            return []
 
 
 def start(update: Update, context: CallbackContext):

@@ -1,5 +1,7 @@
 import spacy
 from coinmarketcapapi import CoinMarketCapAPI
+from conn_db import *
+import requests
 import json
 
 # Load the saved spacy model
@@ -12,6 +14,7 @@ coins = json.load(f)
 # Keys
 f = open("keys.json")
 data = json.load(f)
+
 
 def coin_ner(text):
     """Receives the message from the user and return the information
@@ -39,3 +42,18 @@ def coin_ner(text):
     answer = answer[1:-1]   # remove '' from beginning and end
 
     return answer
+
+
+def semantic_api(query):
+    result = query_cache(query)
+    if result:
+        return result[0]
+
+    else:
+        answer = requests.get('http://index-api:8000/', params={'query': str(query)}).json()
+        try:
+            if answer[0]:
+                push_cache(query, answer[0], answer[1])
+                return answer
+        except:
+            return []
