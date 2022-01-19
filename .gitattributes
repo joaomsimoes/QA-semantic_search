@@ -1,1 +1,5 @@
 Training-Transformers/Finetune-BERT/corpous.txt filter=lfs diff=lfs merge=lfs -text
+TelegramBot/bot/spacy-ner-model filter=lfs diff=lfs merge=lfs -text
+TelegramBot/semantic_search/embeddings filter=lfs diff=lfs merge=lfs -text
+SemanticSearch/hnswlib.bin filter=lfs diff=lfs merge=lfs -text
+SemanticSearch/embeddings filter=lfs diff=lfs merge=lfs -text
