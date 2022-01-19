@@ -1,0 +1,18 @@
+{
+  "bitcoin": "btc",
+  "ethereum": "eth",
+  "tether": "usdt",
+  "bnb": "bnb",
+  "cardano": "ada",
+  "usd coin": "usdc",
+  "solana": "sol",
+  "xrp": "xrp",
+  "terra": "luna",
+  "polkadot": "dot",
+  "dogecoin": "doge",
+  "avalanche": "avax",
+  "polygon": "matic",
+  "shiba": "shib",
+  "shiba inu": "shib",
+  "litecoin": "ltc"
+}
