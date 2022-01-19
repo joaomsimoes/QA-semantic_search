@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 import hashlib
 import nltk
 
+
 def db_connection(database=None):
     f = open("keys.json")
     data = json.load(f)
