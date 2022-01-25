@@ -7,9 +7,9 @@ from telegram.ext import CallbackQueryHandler
 from telegram.ext.filters import Filters
 import telegram
 
-from conn_db import *
 from utils import *
 import logging
+import random
 
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO
@@ -56,7 +56,12 @@ def query_handler(update: Update, context: CallbackContext) -> None:
     else:
         meme = query_meme()
         update.effective_message.reply_photo(meme)
-        update.effective_message.reply_text("Funny right?")
+        messages = ["Funny right?", "What you think about this meme?!", "You want another one?"]
+
+        keyboard = [[InlineKeyboardButton(text='Another one!', callback_data='3')]]
+        reply_markup = InlineKeyboardMarkup(keyboard)
+
+        update.effective_message.reply_text(random.choice(messages), reply_markup=reply_markup)
 
 
 def about_command(update: Update, context: CallbackContext):
@@ -69,7 +74,7 @@ def about_command(update: Update, context: CallbackContext):
 
 def open_question(update: Update, context: CallbackContext) -> None:
     """Semantic search"""
-    context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=telegram.ChatAction.TYPING, timeout=8)
+    context.bot.send_chat_action(chat_id=update.effective_message.chat_id, action=telegram.ChatAction.TYPING, timeout=20)
     answer = semantic_api(update.message.text)
     try:
         if answer[0]:
@@ -80,16 +85,22 @@ def open_question(update: Update, context: CallbackContext) -> None:
 
 
 def give_meme(update: Update, context: CallbackContext):
-    """Send a message when the command /help is issued."""
+    """Gives a meme"""
 
     meme = query_meme()
 
     update.message.reply_photo(meme)
-    update.message.reply_text("Funny right?")
+
+    messages = ["Funny right?", "What you think about this meme?!", "You want another one?"]
+
+    keyboard = [[InlineKeyboardButton(text='Another one!', callback_data='3')]]
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    update.message.reply_text(random.choice(messages), reply_markup=reply_markup)
 
 
 def coin_handler(update: Update, context: CallbackContext):
-    """Send a message when the command /help is issued."""
+    """Answer about coin"""
     answer = coin_ner(update.message.text)
     try:
         update.message.reply_text(answer)
@@ -117,11 +128,7 @@ def main():
     dispatcher.add_handler(
         MessageHandler(Filters.regex(
             '^price from .*|Price from .*|current price from .*|Current price from .*|'
-            'value from .*|Value from .*|bitcoin|Bitcoin|BTC|Btc|btc|Ethereum|ethereum|ETH|Eth|eth|'
-            'Tether|tether|USDT|Usdt|usdt|BNB|Bnb|bnb|Cardano|cardano|ADA|Ada|ada|USD Coin|USDC|Usdc|'
-            'Solana|solana|SOL|sol|Sol|XPR|Xpr|xpr|Terra|terra|LUNA|Luna|luna|Polkadot|polkadot|DOT|dot|Dot|'
-            'Dogecoin|dogecoin|doge|DOGE|Doge|Avalanche|avalanche|AVAX|Avax|avax|Polygon|polygon|MATIC|Matic|matic|'
-            'Shiba|shiba|Shiba Inu|shiba inu|Shiba inu|shiba Inu|SHIB|Shib|shib|Litecoin|litecoin|ltc|Ltc|LTC$'
+            'value from .*|Value from .*$'
         ), coin_handler))
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, open_question))
 
@@ -133,6 +140,12 @@ def main():
     # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
 
+
+# |bitcoin|Bitcoin|BTC|Btc|btc|Ethereum|ethereum|ETH|Eth|eth|'
+# 'Tether|tether|USDT|Usdt|usdt|BNB|Bnb|bnb|Cardano|cardano|ADA|Ada|ada|USD Coin|USDC|Usdc|'
+# 'Solana|solana|SOL|sol|Sol|XPR|Xpr|xpr|Terra|terra|LUNA|Luna|luna|Polkadot|polkadot|DOT|dot|Dot|'
+# 'Dogecoin|dogecoin|doge|DOGE|Doge|Avalanche|avalanche|AVAX|Avax|avax|Polygon|polygon|MATIC|Matic|matic|'
+# 'Shiba|shiba|Shiba Inu|shiba inu|Shiba inu|shiba Inu|SHIB|Shib|shib|Litecoin|litecoin|ltc|Ltc|LTC
 
 if __name__ == '__main__':
     main()
